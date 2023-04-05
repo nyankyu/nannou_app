@@ -1,4 +1,7 @@
-use nannou::{prelude::*, color::named};
+pub mod perlin_noise;
+
+use nannou::prelude::*;
+use perlin_noise::{Dot, Rgb};
 
 fn main() {
     nannou::app(model)
@@ -7,39 +10,47 @@ fn main() {
         .run();
 }
 
-struct Model {
-    x: f32,
-    y: f32,
-    r: f32,
+pub struct Model {
+    bg_color: Rgb,
+    dot: Dot,
+}
+
+impl Default for Model {
+    fn default() -> Self {
+        Self {
+            bg_color: GOLD,
+            dot: Dot::new(),
+        }
+    }
+}
+
+impl Model {
+    fn display(&self, draw: &Draw) {
+        draw.background()
+            .color(self.bg_color);
+            self.dot.display(draw);
+    }
+
+    fn update(&mut self) {
+        self.dot.update();
+    }
 }
 
 fn model(_app: &App) -> Model {
-    Model {
-        x: 0.0,
-        y: 0.0,
-        r: 10.0,
-    }
+    Model::default()
 }
 
 fn update(_app: &App, model: &mut Model, _update: Update) {
-    if model.r > 500.0 {
-        model.r = 10.0;
-    } else {
-        model.r += 1.0;
-    }
+    model.update();
 }
 
 fn view(app: &App, model: &Model, frame: Frame) {
     let draw = app.draw();
 
-    draw.background()
-        .color(named::HONEYDEW);
+    model.display(&draw);
 
-    draw.ellipse()
-        .color(STEELBLUE)
-        .w(model.r)
-        .h(model.r)
-        .x_y(model.x, model.y);
+    draw.background()
+        .color(model.bg_color);
 
     draw.to_frame(app, &frame).unwrap();
 }
