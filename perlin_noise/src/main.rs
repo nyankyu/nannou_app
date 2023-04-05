@@ -4,10 +4,7 @@ use nannou::prelude::*;
 use perlin_noise::{Dot, Rgb};
 
 fn main() {
-    nannou::app(model)
-        .update(update)
-        .simple_window(view)
-        .run();
+    nannou::app(model).update(update).simple_window(view).run();
 }
 
 pub struct Model {
@@ -26,9 +23,8 @@ impl Default for Model {
 
 impl Model {
     fn display(&self, draw: &Draw) {
-        draw.background()
-            .color(self.bg_color);
-            self.dot.display(draw);
+        draw.background().color(self.bg_color);
+        self.dot.display(draw);
     }
 
     fn update(&mut self) {
@@ -49,8 +45,7 @@ fn view(app: &App, model: &Model, frame: Frame) {
 
     model.display(&draw);
 
-    draw.background()
-        .color(model.bg_color);
+    draw.background().color(model.bg_color);
 
     draw.to_frame(app, &frame).unwrap();
 }

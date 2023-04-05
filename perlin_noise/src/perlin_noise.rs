@@ -24,7 +24,7 @@ impl Dot {
             .x_y(self.origin.x, self.origin.y);
     }
 
-    pub fn update(&mut self,) {
+    pub fn update(&mut self) {
         if self.radius > self.max_radius {
             self.radius = 10.0;
         } else {
@@ -40,7 +40,7 @@ impl Default for Dot {
             origin: Point2::new(0.0, 0.0),
             radius: 10.0,
             max_radius: 200.0,
-            growth_rate: 1.0
+            growth_rate: 1.0,
         }
     }
 }
