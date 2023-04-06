@@ -7,7 +7,7 @@ fn main() {
     nannou::app(model).update(update).simple_window(view).run();
 }
 
-pub struct Model {
+struct Model {
     bg_color: Rgb,
     dot: Dot,
 }

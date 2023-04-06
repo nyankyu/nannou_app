@@ -4,11 +4,9 @@ pub type Rgb = Srgb<u8>;
 
 #[derive(Debug, Clone, Copy)]
 pub struct Dot {
-    pub color: Rgb,
-    pub origin: Point2,
-    pub radius: f32,
-    pub max_radius: f32,
-    pub growth_rate: f32,
+    color: Rgb,
+    origin: Point2,
+    radius: f32,
 }
 
 impl Dot {
@@ -25,11 +23,12 @@ impl Dot {
     }
 
     pub fn update(&mut self) {
-        if self.radius > self.max_radius {
-            self.radius = 10.0;
-        } else {
-            self.radius += self.growth_rate;
+        self.origin.x += 10.0;
+        if self.origin.x > 500.0 {
+            self.origin.x = -500.0;
         }
+
+        self.origin.y = random_range(-100.0, 100.0);
     }
 }
 
@@ -39,8 +38,6 @@ impl Default for Dot {
             color: STEELBLUE,
             origin: Point2::new(0.0, 0.0),
             radius: 10.0,
-            max_radius: 200.0,
-            growth_rate: 1.0,
         }
     }
 }
