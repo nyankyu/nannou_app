@@ -4,7 +4,7 @@ use nannou::prelude::*;
 use perlin_noise::{Dot, Rgb};
 
 fn main() {
-    nannou::app(model).update(update).simple_window(view).run();
+    nannou::app(model).update(update).run();
 }
 
 struct Model {
@@ -23,7 +23,6 @@ impl Default for Model {
 
 impl Model {
     fn display(&self, draw: &Draw) {
-        draw.background().color(self.bg_color);
         self.dot.display(draw);
     }
 
@@ -32,7 +31,16 @@ impl Model {
     }
 }
 
-fn model(_app: &App) -> Model {
+const WINDOW_W: u32 = 512;
+const WINDOW_H: u32 = 512;
+
+fn model(app: &App) -> Model {
+    app.new_window()
+        .size(WINDOW_W, WINDOW_H)
+        .view(view)
+        .build()
+        .unwrap();
+
     Model::default()
 }
 
@@ -45,7 +53,9 @@ fn view(app: &App, model: &Model, frame: Frame) {
 
     model.display(&draw);
 
-    draw.background().color(model.bg_color);
+    if app.elapsed_frames() == 1 {
+        draw.background().color(model.bg_color);
+    }
 
     draw.to_frame(app, &frame).unwrap();
 }
