@@ -1,5 +1,5 @@
 use nannou::{
-    noise::{NoiseFn, Perlin},
+    noise::{NoiseFn, Perlin, Seedable},
     prelude::*,
 };
 
@@ -34,7 +34,7 @@ impl Dot {
             self.noise_parameter = random_f64();
         }
 
-        self.origin.y = 200.0 * self.get_noise();
+        self.origin.y = 240.0 * self.get_noise();
     }
 
     fn get_noise(&self) -> f32 {
@@ -47,9 +47,9 @@ impl Default for Dot {
     fn default() -> Self {
         Self {
             color: STEELBLUE,
-            origin: Point2::new(0.0, 0.0),
-            radius: 5.0,
-            noise: Perlin::new(),
+            origin: Point2::new(0.0, 200.0 * random_f32()),
+            radius: 3.0,
+            noise: Perlin::new().set_seed(random_range(0, 10000)),
             noise_parameter: 0.0,
         }
     }

@@ -9,25 +9,29 @@ fn main() {
 
 struct Model {
     bg_color: Rgb,
-    dot: Dot,
+    dots: [Dot; 20],
 }
 
 impl Default for Model {
     fn default() -> Self {
         Self {
             bg_color: GOLD,
-            dot: Dot::new(),
+            dots: [Dot::new(); 20],
         }
     }
 }
 
 impl Model {
     fn display(&self, draw: &Draw) {
-        self.dot.display(draw);
+        for dot in &self.dots {
+            dot.display(draw);
+        }
     }
 
     fn update(&mut self) {
-        self.dot.update();
+        for dot in &mut self.dots {
+            dot.update();
+        }
     }
 }
 
@@ -51,11 +55,11 @@ fn update(_app: &App, model: &mut Model, _update: Update) {
 fn view(app: &App, model: &Model, frame: Frame) {
     let draw = app.draw();
 
-    model.display(&draw);
-
     if app.elapsed_frames() == 1 {
         draw.background().color(model.bg_color);
     }
+
+    model.display(&draw);
 
     draw.to_frame(app, &frame).unwrap();
 }
