@@ -5,6 +5,12 @@ use nannou::{
 
 pub type Rgb = Srgb<u8>;
 
+pub const WINDOW_W: f32 = 512.0;
+pub const WINDOW_H: f32 = 512.0;
+
+const WINDOW_RIGHT: f32 = WINDOW_W / 2.0;
+const WINDOW_LEFT: f32 = -WINDOW_RIGHT;
+
 #[derive(Debug, Clone, Copy)]
 pub struct Dot {
     color: Rgb,
@@ -29,8 +35,9 @@ impl Dot {
 
     pub fn update(&mut self) {
         self.origin.x += 2.0;
-        if self.origin.x > 250.0 {
-            self.origin.x = -250.0;
+
+        if self.origin.x > WINDOW_RIGHT {
+            self.origin.x = WINDOW_LEFT;
             self.noise_parameter = random_f64();
         }
 

@@ -1,21 +1,19 @@
-pub mod perlin_noise;
+mod perlin_noise;
 
 use nannou::prelude::*;
-use perlin_noise::{Dot, Rgb};
+use perlin_noise::*;
 
 fn main() {
     nannou::app(model).update(update).run();
 }
 
 struct Model {
-    bg_color: Rgb,
     dots: [Dot; 20],
 }
 
 impl Default for Model {
     fn default() -> Self {
         Self {
-            bg_color: GOLD,
             dots: [Dot::new(); 20],
         }
     }
@@ -35,12 +33,9 @@ impl Model {
     }
 }
 
-const WINDOW_W: u32 = 512;
-const WINDOW_H: u32 = 512;
-
 fn model(app: &App) -> Model {
     app.new_window()
-        .size(WINDOW_W, WINDOW_H)
+        .size(WINDOW_W as u32, WINDOW_H as u32)
         .view(view)
         .build()
         .unwrap();
@@ -56,7 +51,7 @@ fn view(app: &App, model: &Model, frame: Frame) {
     let draw = app.draw();
 
     if app.elapsed_frames() == 1 {
-        draw.background().color(model.bg_color);
+        draw.background().color(GOLD);
     }
 
     model.display(&draw);
