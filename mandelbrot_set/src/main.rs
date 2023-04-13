@@ -37,7 +37,7 @@ fn model(app: &App) -> Model {
 
     Model { texture }
 }
-
+-2から2の範囲を単純な実装で描画した。
 fn view(app: &App, model: &Model, frame: Frame) {
     frame.clear(BLACK);
 
