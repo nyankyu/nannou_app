@@ -6,6 +6,7 @@ use nannou::{
     prelude::*,
     wgpu::*,
 };
+use num::{complex::Complex64, Complex};
 
 fn main() {
     nannou::app(model).run();
@@ -46,10 +47,12 @@ fn view(app: &App, model: &Model, frame: Frame) {
         win_rec.w() as u32,
         win_rec.h() as u32,
         |x, y| {
+            let r =
+                escape_time(pixel_to_complex(x, y), 256);
             image::Rgba([
-                (x + y) as u8 % 255,
-                y as u8 % 255,
-                x as u8 % 255,
+                ((r * 10) % 255) as u8,
+                ((r * 30) % 255) as u8,
+                ((r * 80) % 255) as u8,
                 255,
             ])
         },
@@ -67,4 +70,23 @@ fn view(app: &App, model: &Model, frame: Frame) {
     draw.texture(&model.texture);
 
     draw.to_frame(app, &frame).unwrap();
+}
+
+fn escape_time(c: Complex<f64>, limit: u32) -> u32 {
+    let mut z = Complex { re: 0.0, im: 0.0 };
+    for i in 0..limit {
+        if z.norm_sqr() > 4.0 {
+            return i;
+        }
+        z = z * z + c;
+    }
+    return 0;
+}
+
+fn pixel_to_complex(x: u32, y: u32) -> Complex64 {
+    let scale = 4.0 / 1024.0;
+    Complex64::new(
+        -2.0 + x as f64 * scale,
+        2.0 - y as f64 * scale,
+    )
 }
