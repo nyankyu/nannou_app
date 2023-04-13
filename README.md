@@ -21,3 +21,8 @@ Generate a two-dimensional force field using Perlin noise. Countless particles m
 
 ![Thumbnail: perlin_noise1](thumbnail/perlin_noise1.png)
 ![Thumbnail: perlin_noise2](thumbnail/perlin_noise2.png)
+
+## mandelbrot_set
+Drawing the Mandelbrot set.
+
+Use parallelisation and wgpu for study.
