@@ -49,8 +49,8 @@ fn view(app: &App, model: &Model, frame: Frame) {
         win_rec.w() as u32,
         win_rec.h() as u32,
         |x, y| {
-            let r =
-                escape_time(pixel_to_complex(x, y), 512);
+            let (x, y) = pixel_to_complex(x, y);
+            let r = escape_time(x, y, 512);
             image::Rgba([
                 ((r * 10) % 255) as u8,
                 ((r * 30) % 255) as u8,
@@ -72,24 +72,28 @@ fn view(app: &App, model: &Model, frame: Frame) {
     draw.texture(&model.texture);
 
     draw.to_frame(app, &frame).unwrap();
-    exit(0);
 }
 
-fn escape_time(c: Complex<f64>, limit: u32) -> u32 {
-    let mut z = Complex { re: 0.0, im: 0.0 };
-    for i in 0..limit {
-        if z.norm_sqr() > 4.0 {
-            return i;
-        }
-        z = z * z + c;
+fn escape_time(x: f64, y: f64, limit: u32) -> u32 {
+    let mut re2 = x * x;
+    let mut im2 = y * y;
+    let mut re = x;
+    let mut im = y;
+
+    let mut i = 0;
+    while i < limit && re2 + im2 <= 4.0 {
+        im = (re + re) * im + y;
+        re = re2 - im2 + x;
+
+        re2 = re * re;
+        im2 = im * im;
+
+        i += 1;
     }
-    return 0;
+    return i;
 }
 
-fn pixel_to_complex(x: u32, y: u32) -> Complex64 {
+fn pixel_to_complex(x: u32, y: u32) -> (f64, f64) {
     let scale = 4.0 / 1024.0;
-    Complex64::new(
-        -2.0 + x as f64 * scale,
-        2.0 - y as f64 * scale,
-    )
+    (-2.0 + x as f64 * scale, 2.0 - y as f64 * scale)
 }
