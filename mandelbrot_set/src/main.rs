@@ -1,5 +1,7 @@
 mod mandelbrot_set;
 
+use std::process::exit;
+
 use mandelbrot_set::MandelbrotSet;
 use nannou::{
     image::{self, ImageBuffer},
@@ -48,7 +50,7 @@ fn view(app: &App, model: &Model, frame: Frame) {
         win_rec.h() as u32,
         |x, y| {
             let r =
-                escape_time(pixel_to_complex(x, y), 256);
+                escape_time(pixel_to_complex(x, y), 512);
             image::Rgba([
                 ((r * 10) % 255) as u8,
                 ((r * 30) % 255) as u8,
@@ -70,6 +72,7 @@ fn view(app: &App, model: &Model, frame: Frame) {
     draw.texture(&model.texture);
 
     draw.to_frame(app, &frame).unwrap();
+    exit(0);
 }
 
 fn escape_time(c: Complex<f64>, limit: u32) -> u32 {
