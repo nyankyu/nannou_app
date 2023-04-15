@@ -50,7 +50,7 @@ fn view(app: &App, model: &Model, frame: Frame) {
         win_rec.h() as u32,
         |x, y| {
             let (x, y) = pixel_to_complex(x, y);
-            let r = escape_time(x, y, 512);
+            let r = escape_time(x, y, 510);
             image::Rgba([
                 ((r * 10) % 255) as u8,
                 ((r * 30) % 255) as u8,
