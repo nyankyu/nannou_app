@@ -5,10 +5,7 @@ Created based on the following video.
 
 Nannou: creative coding with Rust - GitHub Universe 2020: https://www.youtube.com/watch?v=Ml6tpyTyXhM&pp=ugMICgJqYRABGAE%3D
 
-sample
-https://user-images.githubusercontent.com/1366666/232238316-3d5607f3-918f-4321-afe7-b5c25bc1ecd8.mov
-
-
+![Thumbnail: moving_points](thumbnail/moving_points.gif)
 
 ## moving_points2
 This is an APP that changed the pattern of moving_point based on the following work.
