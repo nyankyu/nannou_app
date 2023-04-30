@@ -25,3 +25,8 @@ Generate a two-dimensional force field using Perlin noise. Countless particles m
 Drawing the Mandelbrot set.
 
 Use parallelisation and wgpu for study.
+
+## rotating
+3D drawing. A sequence of points moving on a spherical surface was drawn.
+
+![Thumbnail: rotating](thumbnail/rotating.gif)
