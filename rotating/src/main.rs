@@ -1,43 +1,32 @@
-mod thing;
+mod orbits;
 
 use nannou::prelude::*;
-use thing::Thing;
+use orbits::*;
 
 const WINDOW_H: u32 = 1024;
 const WINDOW_W: u32 = 1024;
-const THINGS_LEN: usize = 50;
 
 fn main() {
     nannou::app(model).update(update).run();
 }
 
 struct Model {
-    things: Vec<Thing>,
-    param: f32,
+    orbits: Orbits,
 }
 
 impl Model {
     fn new() -> Self {
         Self {
-            things: (0..THINGS_LEN)
-                .map(|_| Thing::new())
-                .collect(),
-            param: -1000.0,
+            orbits: Orbits::new(3),
         }
     }
 
     fn update(&mut self) {
-        self.things
-            .iter_mut()
-            .for_each(|thing| thing.update(self.param));
-
-        self.param += 0.01;
+        self.orbits.update();
     }
 
     fn display(&self, draw: &Draw) {
-        self.things
-            .iter()
-            .for_each(|thing| thing.display(draw));
+        self.orbits.display(draw);
     }
 }
 
@@ -45,19 +34,10 @@ fn model(app: &App) -> Model {
     app.new_window()
         .size(WINDOW_W, WINDOW_H)
         .view(view)
-        .key_pressed(key_pressed)
         .build()
         .unwrap();
 
     Model::new()
-}
-
-fn key_pressed(app: &App, model: &mut Model, key: Key) {
-    match key {
-        Key::Space => {
-        },
-        _ => (),
-    }
 }
 
 fn update(_app: &App, model: &mut Model, _update: Update) {
