@@ -1,11 +1,11 @@
 mod thing;
 
 use nannou::prelude::*;
-use thing::*;
+use thing::Thing;
 
 const WINDOW_H: u32 = 1024;
 const WINDOW_W: u32 = 1024;
-const THINGS_LEN: usize = 100;
+const THINGS_LEN: usize = 50;
 
 fn main() {
     nannou::app(model).update(update).run();
@@ -13,7 +13,7 @@ fn main() {
 
 struct Model {
     things: Vec<Thing>,
-    time: f32
+    param: f32,
 }
 
 impl Model {
@@ -22,22 +22,22 @@ impl Model {
             things: (0..THINGS_LEN)
                 .map(|_| Thing::new())
                 .collect(),
-            time: 0.0,
+            param: -1000.0,
         }
     }
 
     fn update(&mut self) {
         self.things
             .iter_mut()
-            .for_each(|thing| thing.update());
+            .for_each(|thing| thing.update(self.param));
 
-        self.time += 0.01;
+        self.param += 0.01;
     }
 
     fn display(&self, draw: &Draw) {
         self.things
             .iter()
-            .for_each(|thing| thing.display(draw, self.time));
+            .for_each(|thing| thing.display(draw));
     }
 }
 
@@ -45,10 +45,19 @@ fn model(app: &App) -> Model {
     app.new_window()
         .size(WINDOW_W, WINDOW_H)
         .view(view)
+        .key_pressed(key_pressed)
         .build()
         .unwrap();
 
     Model::new()
+}
+
+fn key_pressed(app: &App, model: &mut Model, key: Key) {
+    match key {
+        Key::Space => {
+        },
+        _ => (),
+    }
 }
 
 fn update(_app: &App, model: &mut Model, _update: Update) {
