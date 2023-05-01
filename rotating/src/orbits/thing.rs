@@ -36,11 +36,15 @@ impl Thing {
             self.hue = 0.0;
         }
 
-        self.color = hsl(
-            self.hue,
-            (self.point[2] + 550.0) / 800.0,
-            0.5,
-        );
+        self.color = if self.point[2] > 0.0 {
+            hsl(
+                self.hue,
+                (self.point[2] + 550.0) / 800.0,
+                0.5,
+            )
+        } else {
+            hsl(self.hue, 0.0, 0.05)
+        };
 
         self.param += 0.02;
     }

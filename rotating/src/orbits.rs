@@ -23,7 +23,14 @@ impl Orbits {
     }
 
     pub fn display(&self, draw: &Draw) {
-        self.orbit_vec.iter()
+        draw.ellipse()
+            .w_h(900.0, 900.0)
+            .stroke_weight(2.0)
+            .no_fill()
+            .stroke_color(rgba(1.0, 1.0, 1.0, 0.01));
+
+        self.orbit_vec
+            .iter()
             .for_each(|orbit| orbit.display(draw));
     }
 }
