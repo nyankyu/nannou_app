@@ -4,12 +4,14 @@ use mandelbrot_set::*;
 use nannou::{prelude::*, wgpu::*};
 
 fn main() {
-    nannou::app(model).run();
+    nannou::app(model).event(event).run();
 }
 
 struct Model {
     texture: Texture,
     mandelbrot_set: MandelbrotSet,
+    draw_frame: u64,
+    zoom_in: bool,
 }
 
 fn model(app: &App) -> Model {
@@ -30,22 +32,50 @@ fn model(app: &App) -> Model {
         )
         .build(window.device());
 
-    let target_area = Rect::from_xy_wh_f64(
-        dvec2(0.0, 0.0),
-        dvec2(4.0, 4.0),
-    );
-
     Model {
         texture: texture,
         mandelbrot_set: MandelbrotSet::new(
-            1024.0,
-            1024.0,
-            target_area,
+            win_rect.h(),
+            win_rect.w(),
         ),
+        draw_frame: 0,
+        zoom_in: true,
     }
 }
 
+fn event(app: &App, model: &mut Model, event: Event) {
+    match event {
+        Event::WindowEvent {
+            id: _id,
+            simple: Some(window_event),
+        } => match window_event {
+            MousePressed(MouseButton::Left) => {
+                model.zoom_in = true;
+                update(app, model)
+            }
+            MousePressed(MouseButton::Right) => {
+                model.zoom_in = false;
+                update(app, model)
+            }
+            _ => (),
+        },
+        _ => (),
+    }
+}
+
+fn update(app: &App, model: &mut Model) {
+    model.mandelbrot_set.update(
+        vec2(app.mouse.x, app.mouse.y),
+        model.zoom_in,
+    );
+    model.draw_frame = app.elapsed_frames() + 1;
+}
+
 fn view(app: &App, model: &Model, frame: Frame) {
+    if app.elapsed_frames() != model.draw_frame {
+        return;
+    }
+
     frame.clear(BLACK);
 
     let image = model.mandelbrot_set.make_image();
