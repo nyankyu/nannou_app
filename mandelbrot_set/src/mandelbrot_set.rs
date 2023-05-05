@@ -2,10 +2,11 @@ use nannou::{
     image::{self, ImageBuffer},
     prelude::*,
 };
+use rayon::prelude::*;
 
 pub(crate) struct MandelbrotSet {
-    window_h: f64,
-    window_w: f64,
+    window_h: u32,
+    window_w: u32,
     base_point: DVec2,
     center: DVec2,
     scale: f64,
@@ -14,8 +15,8 @@ pub(crate) struct MandelbrotSet {
 impl MandelbrotSet {
     pub(crate) fn new(h: f32, w: f32) -> Self {
         Self {
-            window_h: h as f64,
-            window_w: w as f64,
+            window_h: h as u32,
+            window_w: w as u32,
             base_point: dvec2(-2.0, 2.0),
             center: dvec2(0.0, 0.0),
             scale: 4.0 / w as f64,
@@ -25,20 +26,39 @@ impl MandelbrotSet {
     pub(crate) fn make_image(
         &self,
     ) -> ImageBuffer<image::Rgba<u8>, Vec<u8>> {
-        ImageBuffer::from_fn(
-            self.window_w as u32,
-            self.window_h as u32,
-            |x, y| {
-                let (x, y) = self.pixel_to_complex(x, y);
-                let r = escape_time(x, y, 10000);
-                image::Rgba([
-                    (r % 255) as u8,
-                    (r % 255) as u8,
-                    (r % 255) as u8,
-                    255,
-                ])
+        let mut buf = vec![
+            0;
+            4 * self.window_w as usize
+                * self.window_h as usize
+        ];
+
+        let bands: Vec<(usize, &mut [u8])> = buf
+            .chunks_mut(4 * self.window_w as usize)
+            .enumerate()
+            .collect();
+
+        bands.into_par_iter().for_each(
+            |(pixel_y, band)| {
+                for pixel_x in 0..self.window_w as usize {
+                    let (x, y) = self.pixel_to_complex(
+                        pixel_x as u32,
+                        pixel_y as u32,
+                    );
+                    let r = escape_time(x, y, 1000);
+                    band[pixel_x * 4] = (r % 255) as u8;
+                    band[pixel_x * 4 + 1] = (r % 255) as u8;
+                    band[pixel_x * 4 + 2] = (r % 255) as u8;
+                    band[pixel_x * 4 + 3] = 255;
+                }
             },
+        );
+
+        ImageBuffer::from_vec(
+            self.window_w,
+            self.window_h,
+            buf,
         )
+        .unwrap()
     }
 
     pub(crate) fn update(

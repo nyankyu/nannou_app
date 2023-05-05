@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 num = "0.4"
 nannou = "0.18.1"
+rayon = "1.7.0"
