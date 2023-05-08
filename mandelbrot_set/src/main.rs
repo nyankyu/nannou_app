@@ -12,6 +12,7 @@ struct Model {
     mandelbrot_set: MandelbrotSet,
     draw_frame: u64,
     zoom_in: bool,
+    file_num: u32,
 }
 
 fn model(app: &App) -> Model {
@@ -40,6 +41,7 @@ fn model(app: &App) -> Model {
         ),
         draw_frame: 0,
         zoom_in: true,
+        file_num: 0,
     }
 }
 
@@ -69,6 +71,7 @@ fn update(app: &App, model: &mut Model) {
         model.zoom_in,
     );
     model.draw_frame = app.elapsed_frames() + 1;
+    model.file_num += 1;
 }
 
 fn view(app: &App, model: &Model, frame: Frame) {
@@ -91,4 +94,18 @@ fn view(app: &App, model: &Model, frame: Frame) {
     draw.texture(&model.texture);
 
     draw.to_frame(app, &frame).unwrap();
+
+    //save_frame(app, model.file_num);
+}
+
+#[allow(dead_code)]
+fn save_frame(app: &App, file_num: u32) {
+    let path = app
+        .project_path()
+        .expect("could not locate project_path")
+        .join("snapshots")
+        .join(file_num.to_string())
+        .with_extension("png");
+
+    app.main_window().capture_frame(path);
 }
