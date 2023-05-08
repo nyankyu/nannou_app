@@ -10,23 +10,25 @@ pub(crate) struct MandelbrotSet {
     base_point: DVec2,
     center: DVec2,
     scale: f64,
+    zoom_ratio: f64,
 }
 
 impl MandelbrotSet {
-    pub(crate) fn new(h: f32, w: f32) -> Self {
+    pub(crate) fn new(w: f32, h: f32) -> Self {
         Self {
-            window_h: h as u32,
             window_w: w as u32,
-            base_point: dvec2(-2.0, 2.0),
+            window_h: h as u32,
+            base_point: dvec2(-2.0 * (w / h) as f64, 2.0),
             center: dvec2(0.0, 0.0),
-            scale: 4.0 / w as f64,
+            scale: 4.0 / h as f64,
+            zoom_ratio: 0.5,
         }
     }
 
     pub(crate) fn make_image(
         &self,
     ) -> ImageBuffer<image::Rgba<u8>, Vec<u8>> {
-        let limit: u32 = 256_000;
+        let limit: u32 = 25600;
         let mut iteration_counts =
             vec![
                 0;
@@ -58,7 +60,7 @@ impl MandelbrotSet {
             self.window_h,
             |x, y| {
                 let index =
-                    (y * self.window_h + x) as usize;
+                    (y * self.window_w + x) as usize;
                 let r =
                     (iteration_counts[index] % 256) as u8;
                 image::Rgba([r, r, r, 255])
@@ -71,7 +73,7 @@ impl MandelbrotSet {
         p: Vec2,
         zoom_in: bool,
     ) {
-        let zoom_rate = if zoom_in { 0.5 } else { 2.0 };
+        let zoom_rate = if zoom_in { self.zoom_ratio } else { self.zoom_ratio.inv() };
         let point =
             dvec2(p.x as f64, p.y as f64) * self.scale;
         let to_base =
@@ -80,6 +82,8 @@ impl MandelbrotSet {
         self.center += point;
         self.base_point = self.center + to_base;
         self.scale *= zoom_rate;
+
+        //println!("{:1.30}", self.center);
     }
 
     fn pixel_to_complex(
@@ -91,6 +95,10 @@ impl MandelbrotSet {
             self.base_point[0] + x as f64 * self.scale,
             self.base_point[1] - y as f64 * self.scale,
         )
+    }
+
+    pub(crate) fn change_zoo_ratio(&mut self, ratio: f32) {
+        self.zoom_ratio = ratio as f64;
     }
 }
 
@@ -122,7 +130,7 @@ fn escape_time(x: f64, y: f64, limit: u32) -> u32 {
         }
 
         period += 1;
-        if period > 30 {
+        if period > 20 {
             period = 0;
             old_re = re;
             old_im = im;
