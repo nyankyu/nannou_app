@@ -3,7 +3,9 @@
 ## moving_points
 This was created based on the following video:
 
-Nannou: creative coding with Rust - GitHub Universe 2020: https://www.youtube.com/watch?v=Ml6tpyTyXhM&pp=ugMICgJqYRABGAE%3D
+Nannou: creative coding with Rust - GitHub Universe 2020:
+
+https://www.youtube.com/watch?v=Ml6tpyTyXhM&pp=ugMICgJqYRABGAE%3D
 
 ![Thumbnail: moving_points](thumbnail/moving_points.gif)
 
