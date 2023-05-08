@@ -26,16 +26,19 @@ impl MandelbrotSet {
     pub(crate) fn make_image(
         &self,
     ) -> ImageBuffer<image::Rgba<u8>, Vec<u8>> {
-        let mut buf = vec![
-            0;
-            4 * self.window_w as usize
-                * self.window_h as usize
-        ];
+        let limit: u32 = 256_000;
+        let mut iteration_counts =
+            vec![
+                0;
+                self.window_w as usize
+                    * self.window_h as usize
+            ];
 
-        let bands: Vec<(usize, &mut [u8])> = buf
-            .chunks_mut(4 * self.window_w as usize)
-            .enumerate()
-            .collect();
+        let bands: Vec<(usize, &mut [u32])> =
+            iteration_counts
+                .chunks_mut(self.window_w as usize)
+                .enumerate()
+                .collect();
 
         bands.into_par_iter().for_each(
             |(pixel_y, band)| {
@@ -44,21 +47,23 @@ impl MandelbrotSet {
                         pixel_x as u32,
                         pixel_y as u32,
                     );
-                    let r = escape_time(x, y, 1000);
-                    band[pixel_x * 4] = (r % 255) as u8;
-                    band[pixel_x * 4 + 1] = (r % 255) as u8;
-                    band[pixel_x * 4 + 2] = (r % 255) as u8;
-                    band[pixel_x * 4 + 3] = 255;
+                    band[pixel_x] =
+                        escape_time(x, y, limit);
                 }
             },
         );
 
-        ImageBuffer::from_vec(
+        ImageBuffer::from_fn(
             self.window_w,
             self.window_h,
-            buf,
+            |x, y| {
+                let index =
+                    (y * self.window_h + x) as usize;
+                let r =
+                    (iteration_counts[index] % 256) as u8;
+                image::Rgba([r, r, r, 255])
+            },
         )
-        .unwrap()
     }
 
     pub(crate) fn update(
@@ -95,6 +100,10 @@ fn escape_time(x: f64, y: f64, limit: u32) -> u32 {
     let mut re = x;
     let mut im = y;
 
+    let mut old_re = 0.0;
+    let mut old_im = 0.0;
+    let mut period = 0;
+
     let mut i = 0;
     while i < limit && re2 + im2 <= 4.0 {
         im = (re + re) * im + y;
@@ -104,6 +113,20 @@ fn escape_time(x: f64, y: f64, limit: u32) -> u32 {
         im2 = im * im;
 
         i += 1;
+
+        if abs(re - old_re) < 1e-9
+            && abs(im - old_im) < 1e-9
+        {
+            i = limit;
+            break;
+        }
+
+        period += 1;
+        if period > 30 {
+            period = 0;
+            old_re = re;
+            old_im = im;
+        }
     }
     return i;
 }
