@@ -5,9 +5,9 @@ use std::process::exit;
 use mandelbrot_set::*;
 use nannou::{prelude::*, wgpu::*};
 
-//const ZOOM_RATIO: f32 = 0.9;
-const ZOOM_RATIO: f32 = 0.995;
-const FILE_MAX: u32 = 10000;
+const FILE_MAX: u32 = 5000;
+const WINDOW_H: u32 = 720;
+const WINDOW_W: u32 = 1280;
 
 fn main() {
     nannou::app(model).event(event).run();
@@ -20,12 +20,11 @@ struct Model {
     zoom_in: bool,
     file_num: u32,
     auto: bool,
-    auto_target: Vec2,
 }
 
 fn model(app: &App) -> Model {
     app.new_window()
-        .size(3555, 2000)
+        .size(WINDOW_W, WINDOW_H)
         .view(view)
         .build()
         .unwrap();
@@ -51,20 +50,16 @@ fn model(app: &App) -> Model {
         zoom_in: true,
         file_num: 0,
         auto: false,
-        auto_target: vec2(-76.171875, 513.993),
-        //auto_target: vec2(-39.0, 264.7),
     }
 }
 
 fn event(app: &App, model: &mut Model, event: Event) {
     if model.auto && model.draw_frame < app.elapsed_frames()
     {
-        model.mandelbrot_set.update(
-            next_target(&mut model.auto_target),
-            true,
-        );
+        model.mandelbrot_set.auto_next();
         model.draw_frame = app.elapsed_frames() + 1;
         model.file_num += 1;
+        //println!("{}", model.file_num);
     }
 
     match event {
@@ -81,16 +76,13 @@ fn event(app: &App, model: &mut Model, event: Event) {
                 update(app, model)
             }
             KeyPressed(Key::Space) => {
-                model.auto = true;
-                model
-                    .mandelbrot_set
-                    .change_zoo_ratio(ZOOM_RATIO);
-                model.mandelbrot_set.update(
-                    next_target(&mut model.auto_target),
-                    true,
-                );
-                model.draw_frame = app.elapsed_frames() + 1;
-                model.file_num += 1;
+                model.auto ^= true;
+                if !model.auto {
+                    model.mandelbrot_set.auto_set(false);
+                    return;
+                }
+
+                model.mandelbrot_set.auto_set(true);
             }
             _ => (),
         },
@@ -145,11 +137,4 @@ fn save_frame(app: &App, file_num: u32) {
         .with_extension("png");
 
     app.main_window().capture_frame(path);
-}
-
-fn next_target(target: &mut Vec2) -> Vec2 {
-    let next = *target * 0.005;
-    *target -= next;
-    *target *= ZOOM_RATIO.inv();
-    next
 }
