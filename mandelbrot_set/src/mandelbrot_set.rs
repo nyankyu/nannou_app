@@ -11,7 +11,8 @@ const ZOOM_RATIO: f64 = 0.9;
 const AUTO_ZOOM_RATIO: f64 = 0.998;
 const AUTO_ZOOM_TARGET: (f64, f64) =
     //(-0.15773294549873199, 1.0253132341831026);
-(-0.8606130991081128, -0.2351181260185022);
+//(-0.8606130991081128, -0.2351181260185022);
+(-0.7694116949467069, -0.11523600047980796);
 const ITERATION_LIMIT: u32 = 2_000;
 
 pub(crate) struct MandelbrotSet {
@@ -145,8 +146,8 @@ impl MandelbrotSet {
 
             i += 1;
 
-            if abs(re - old_re) < 1e-6
-                && abs(im - old_im) < 1e-6
+            if abs(re - old_re) < 1e-11
+                && abs(im - old_im) < 1e-11
             {
                 i = limit;
                 break;
