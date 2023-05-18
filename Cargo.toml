@@ -1,0 +1,10 @@
+[workspace]
+members = [
+    "mandelbrot_set",
+    "moving_points",
+    "moving_points2",
+    "perlin_noise",
+    "rotating",
+]
+
+resolver="2"
