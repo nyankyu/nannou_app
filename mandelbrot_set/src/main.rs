@@ -133,6 +133,7 @@ fn save_frame(app: &App, file_num: u32) {
         .project_path()
         .expect("could not locate project_path")
         .join("snapshots")
+        .join("mandelbrot_set")
         .join(file_num.to_string())
         .with_extension("png");
 
