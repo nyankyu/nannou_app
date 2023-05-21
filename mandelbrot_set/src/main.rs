@@ -1,13 +1,14 @@
 mod mandelbrot_set;
 
-use std::process::exit;
-
 use mandelbrot_set::*;
 use nannou::{prelude::*, wgpu::*};
+use std::process::exit;
 
 const FILE_MAX: u32 = 5000;
-const WINDOW_H: u32 = 720;
+//const WINDOW_H: u32 = 720;
+const WINDOW_H: u32 = 1280;
 const WINDOW_W: u32 = 1280;
+const ZOOM_RATIO: f32 = 0.6;
 
 fn main() {
     nannou::app(model).event(event).run();
@@ -17,9 +18,7 @@ struct Model {
     texture: Texture,
     mandelbrot_set: MandelbrotSet,
     draw_frame: u64,
-    zoom_in: bool,
     file_num: u32,
-    auto: bool,
 }
 
 fn model(app: &App) -> Model {
@@ -31,6 +30,7 @@ fn model(app: &App) -> Model {
 
     let window = app.main_window();
     let win_rect = window.rect();
+
     let texture = TextureBuilder::new()
         .size([win_rect.w() as u32, win_rect.h() as u32])
         .format(TextureFormat::Rgba8Unorm)
@@ -47,19 +47,16 @@ fn model(app: &App) -> Model {
             win_rect.h(),
         ),
         draw_frame: 0,
-        zoom_in: true,
         file_num: 0,
-        auto: false,
     }
 }
 
 fn event(app: &App, model: &mut Model, event: Event) {
-    if model.auto && model.draw_frame < app.elapsed_frames()
+    if model.mandelbrot_set.is_auto()
+        && model.draw_frame < app.elapsed_frames()
     {
         model.mandelbrot_set.auto_next();
-        model.draw_frame = app.elapsed_frames() + 1;
-        model.file_num += 1;
-        //println!("{}", model.file_num);
+        draw_next_frame(app, model);
     }
 
     match event {
@@ -68,21 +65,25 @@ fn event(app: &App, model: &mut Model, event: Event) {
             simple: Some(window_event),
         } => match window_event {
             MousePressed(MouseButton::Left) => {
-                model.zoom_in = true;
-                update(app, model)
+                model.mandelbrot_set.zoom_to_click(
+                    app.window_rect(),
+                    app.mouse.x,
+                    app.mouse.y,
+                    ZOOM_RATIO,
+                );
+                draw_next_frame(app, model);
             }
             MousePressed(MouseButton::Right) => {
-                model.zoom_in = false;
-                update(app, model)
+                model.mandelbrot_set.zoom_to_click(
+                    app.window_rect(),
+                    app.mouse.x,
+                    app.mouse.y,
+                    ZOOM_RATIO.inv(),
+                );
+                draw_next_frame(app, model);
             }
             KeyPressed(Key::Space) => {
-                model.auto ^= true;
-                if !model.auto {
-                    model.mandelbrot_set.auto_set(false);
-                    return;
-                }
-
-                model.mandelbrot_set.auto_set(true);
+                model.mandelbrot_set.auto();
             }
             _ => (),
         },
@@ -90,11 +91,7 @@ fn event(app: &App, model: &mut Model, event: Event) {
     }
 }
 
-fn update(app: &App, model: &mut Model) {
-    model.mandelbrot_set.update(
-        vec2(app.mouse.x, app.mouse.y),
-        model.zoom_in,
-    );
+fn draw_next_frame(app: &App, model: &mut Model) {
     model.draw_frame = app.elapsed_frames() + 1;
     model.file_num += 1;
 }
