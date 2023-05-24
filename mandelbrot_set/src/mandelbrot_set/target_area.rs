@@ -1,4 +1,4 @@
-use  nannou::prelude::*;
+use nannou::prelude::*;
 
 pub(super) struct TargetArea {
     pub(super) window_w: u32,
@@ -35,5 +35,21 @@ impl TargetArea {
             * magnification
             + self.center;
         self.per_pixel *= magnification;
+    }
+
+    pub(crate) fn change(
+        &mut self,
+        center: DVec2,
+        magnification: f64,
+    ) {
+        self.center = dvec2(0.0, 0.0);
+        self.base = dvec2(
+            -2.0 * (self.window_w / self.window_h) as f64,
+            2.0,
+        );
+        self.per_pixel = 4.0 / self.window_h as f64;
+
+        self.move_to(center);
+        self.zoom(magnification);
     }
 }

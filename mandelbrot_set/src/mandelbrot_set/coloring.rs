@@ -2,6 +2,8 @@
 
 use nannou::image::Rgba;
 
+pub(super) struct Coloring {}
+
 pub(super) fn gray_cyclic(count: u32) -> Rgba<u8> {
     let gray = (count % 256) as u8;
     Rgba([gray, gray, gray, 255])
