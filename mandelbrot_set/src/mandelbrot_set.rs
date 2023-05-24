@@ -120,6 +120,14 @@ impl MandelbrotSet {
         let mut re = x;
         let mut im = y;
 
+        let q = re2 - 0.5 * re + 0.0625 + im2;
+        if im2 >= 4.0 * q * (q + re - 0.25) {
+            return limit;
+        }
+        if (re + 1.0) * (re + 1.0) + im2 < 0.0625 {
+            return limit;
+        }
+
         let mut old_re = 0.0;
         let mut old_im = 0.0;
         let mut period = 0;
@@ -150,4 +158,5 @@ impl MandelbrotSet {
         }
         return i;
     }
+
 }
