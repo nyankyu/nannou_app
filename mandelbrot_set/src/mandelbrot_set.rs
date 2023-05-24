@@ -11,14 +11,13 @@ use nannou::{
 use rayon::prelude::*;
 use target_area::*;
 
-const ITERATION_LIMIT: u32 = 20_000;
+pub(crate) const ITERATION_LIMIT: u32 = 20_000;
 
 pub(crate) struct MandelbrotSet {
     target: TargetArea,
     iteration_counts: Vec<u32>,
     draw_count: u32,
     coloring: Coloring,
-    color_palette: Vec<Rgba<u8>>,
     auto_zoom: AutoZoom,
 }
 
@@ -35,11 +34,8 @@ impl MandelbrotSet {
                     as usize
             ],
             draw_count: 0,
-            color_palette: make_color_palette(
-                ITERATION_LIMIT,
-            ),
             auto_zoom: AutoZoom::new(false),
-            coloring: Coloring {},
+            coloring: Coloring::new(ColoringMethod::GrayBackAndFroth),
         };
         mandelbrot_set.count_iteration();
 
@@ -49,11 +45,6 @@ impl MandelbrotSet {
     pub(crate) fn make_image(
         &self,
     ) -> ImageBuffer<Rgba<u8>, Vec<u8>> {
-        let heatmap = make_cumulative_heatmap(
-            &self.iteration_counts,
-            ITERATION_LIMIT,
-        );
-
         ImageBuffer::from_fn(
             self.target.window_w,
             self.target.window_h,
@@ -61,19 +52,7 @@ impl MandelbrotSet {
                 let index =
                     (y * self.target.window_w + x) as usize;
                 let count = self.iteration_counts[index];
-                if count == ITERATION_LIMIT {
-                    Rgba([0, 0, 0, 255])
-                } else {
-                    //gray_cyclic(count)
-                    //gray_back_and_froth(count)
-                    //gray_strip(count)
-                    //two_color(count)
-                    //four_color(count)
-                    //gray_cyclic_phase(count, self.i)
-                    //gray_back_and_froth_phase(count, self.i)
-                    //self.color_palette[count as usize]
-                    gray_heatmap(&heatmap, count)
-                }
+                self.coloring.get(count)
             },
         )
     }

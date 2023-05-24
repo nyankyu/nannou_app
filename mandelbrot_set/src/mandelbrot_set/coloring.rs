@@ -2,7 +2,84 @@
 
 use nannou::image::Rgba;
 
-pub(super) struct Coloring {}
+use super::ITERATION_LIMIT;
+
+pub(super) struct Coloring {
+    method: ColoringMethod,
+    palette: Vec<Rgba<u8>>,
+}
+
+pub(super) enum ColoringMethod {
+    GrayCyclic,
+    GrayBackAndFroth,
+    Heatmap,
+}
+
+impl Coloring {
+    pub(super) fn new(
+        coloring_method: ColoringMethod,
+    ) -> Self {
+        match coloring_method {
+            ColoringMethod::GrayCyclic => {
+                let mut palette = Vec::with_capacity(256);
+                for c in 0..=255 {
+                    palette.push(Rgba([c, c, c, 255]));
+                }
+                Self {
+                    method: coloring_method,
+                    palette: palette,
+                }
+            },
+            ColoringMethod::GrayBackAndFroth => {
+                let mut palette = Vec::with_capacity(511);
+                for c in 0..511 {
+                    let c: u8 = if c < 256 {
+                        c as u8
+                    } else {
+                        (511 - c) as u8
+                    };
+                    palette.push(Rgba([c, c, c, 255]));
+                }
+                Self {
+                    method: coloring_method,
+                    palette: palette,
+                }
+            },
+            ColoringMethod::Heatmap => {
+                let mut palette = Vec::with_capacity(256);
+                for c in 0..=255 {
+                    palette.push(Rgba([c, c, c, 255]));
+                }
+                Self {
+                    method: coloring_method,
+                    palette: palette,
+                }
+            }
+        }
+    }
+
+    pub(super) fn get(&self, num: u32) -> Rgba<u8> {
+        match self.method {
+            ColoringMethod::GrayCyclic => {
+                if num == ITERATION_LIMIT {
+                    self.palette[0]
+                } else {
+                    self.palette[num as usize % 256]
+                }
+            },
+            ColoringMethod::GrayBackAndFroth => {
+                if num == ITERATION_LIMIT {
+                    self.palette[0]
+                } else {
+                    self.palette[num as usize % 511]
+                }
+            },
+            ColoringMethod::Heatmap => {
+                self.palette[num as usize % 256]
+            }
+        }
+    }
+}
 
 pub(super) fn gray_cyclic(count: u32) -> Rgba<u8> {
     let gray = (count % 256) as u8;
@@ -104,9 +181,8 @@ pub(super) fn gray_heatmap(
     heatmap: &Vec<u32>,
     count: u32,
 ) -> Rgba<u8> {
-    let total = heatmap[heatmap.len()-2];
-    let r = (heatmap[count as usize] as f32
-        / total as f32
+    let total = heatmap[heatmap.len() - 2];
+    let r = (heatmap[count as usize] as f32 / total as f32
         * 255.0) as u8;
 
     Rgba([r, r, r, 255])
