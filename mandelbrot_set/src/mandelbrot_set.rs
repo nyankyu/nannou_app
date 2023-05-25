@@ -35,7 +35,9 @@ impl MandelbrotSet {
             ],
             draw_count: 0,
             auto_zoom: AutoZoom::new(false),
-            coloring: Coloring::new(ColoringMethod::GrayBackAndFroth),
+            coloring: Coloring::new(
+                ColoringMethod::GrayBackAndFroth,
+            ),
         };
         mandelbrot_set.count_iteration();
 
@@ -120,10 +122,12 @@ impl MandelbrotSet {
         let mut re = x;
         let mut im = y;
 
+        // cardioid check
         let q = re2 - 0.5 * re + 0.0625 + im2;
         if im2 >= 4.0 * q * (q + re - 0.25) {
             return limit;
         }
+        // bulb check
         if (re + 1.0) * (re + 1.0) + im2 < 0.0625 {
             return limit;
         }
@@ -142,6 +146,7 @@ impl MandelbrotSet {
 
             i += 1;
 
+            // periodicity check
             if abs(re - old_re) < 1e-11
                 && abs(im - old_im) < 1e-11
             {
@@ -156,7 +161,7 @@ impl MandelbrotSet {
                 old_im = im;
             }
         }
+
         return i;
     }
-
 }
