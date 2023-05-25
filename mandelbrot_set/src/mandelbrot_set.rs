@@ -150,7 +150,7 @@ impl MandelbrotSet {
             }
 
             period += 1;
-            if period > 20 {
+            if period > 2000 {
                 period = 0;
                 old_re = re;
                 old_im = im;
