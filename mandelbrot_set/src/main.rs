@@ -82,9 +82,12 @@ fn event(app: &App, model: &mut Model, event: Event) {
                 );
                 draw_next_frame(app, model);
             }
-            KeyPressed(Key::Space) => {
+            KeyPressed(Key::A) => {
                 model.mandelbrot_set.auto();
-            }
+            },
+            KeyPressed(Key::S) => {
+                save_frame(app, model.file_num);
+            },
             _ => (),
         },
         _ => (),
