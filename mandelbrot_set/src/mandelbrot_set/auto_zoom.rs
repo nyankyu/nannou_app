@@ -55,16 +55,17 @@ impl AutoZoom {
                     + target.center;
                 target.move_to(to);
                 target.zoom(ZOOM_RATIO);
-            }
+            },
             AutoType::FromPlaceToPlace { target_list } => {
                 let (center, magnification) =
                     target_list[self.index];
                 self.index += 1;
                 if self.index == target_list.len() {
                     self.auto = false;
+                    self.index = 0;
                 }
                 target.change(center, magnification);
-            }
+            },
         }
     }
 }
