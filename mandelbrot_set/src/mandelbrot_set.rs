@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 mod auto_zoom;
 mod coloring;
 mod target_area;

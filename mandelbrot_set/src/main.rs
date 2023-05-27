@@ -1,23 +1,18 @@
 mod mandelbrot_set;
 
-use mandelbrot_set::*;
-use nannou::{prelude::*, wgpu::*};
-use std::process::exit;
+use nannou::{prelude::*};
+use std::{process::exit};
 
-const FILE_MAX: u32 = 5000;
-//const WINDOW_H: u32 = 720;
-const WINDOW_H: u32 = 1280;
-const WINDOW_W: u32 = 1280;
-const ZOOM_RATIO: f32 = 0.6;
+const WINDOW_H: u32 = 1920;
+const WINDOW_W: u32 = 1080;
+const SCALSE: f32 = 0.25 * WINDOW_W as f32;
 
 fn main() {
-    nannou::app(model).event(event).run();
+    nannou::app(model).update(update).event(event).run();
 }
 
 struct Model {
-    texture: Texture,
-    mandelbrot_set: MandelbrotSet,
-    draw_frame: u64,
+    theta: f32,
     file_num: u32,
 }
 
@@ -28,99 +23,71 @@ fn model(app: &App) -> Model {
         .build()
         .unwrap();
 
-    let window = app.main_window();
-    let win_rect = window.rect();
-
-    let texture = TextureBuilder::new()
-        .size([win_rect.w() as u32, win_rect.h() as u32])
-        .format(TextureFormat::Rgba8Unorm)
-        .usage(
-            TextureUsages::COPY_DST
-                | TextureUsages::TEXTURE_BINDING,
-        )
-        .build(window.device());
-
     Model {
-        texture: texture,
-        mandelbrot_set: MandelbrotSet::new(
-            win_rect.w(),
-            win_rect.h(),
-        ),
-        draw_frame: 0,
+        theta: 0.0,
         file_num: 0,
     }
 }
 
-fn event(app: &App, model: &mut Model, event: Event) {
-    if model.mandelbrot_set.is_auto()
-        && model.draw_frame < app.elapsed_frames()
-    {
-        model.mandelbrot_set.auto_next();
-        draw_next_frame(app, model);
-    }
-
-    match event {
-        Event::WindowEvent {
-            id: _id,
-            simple: Some(window_event),
-        } => match window_event {
-            MousePressed(MouseButton::Left) => {
-                model.mandelbrot_set.zoom_to_click(
-                    app.window_rect(),
-                    app.mouse.x,
-                    app.mouse.y,
-                    ZOOM_RATIO,
-                );
-                draw_next_frame(app, model);
-            }
-            MousePressed(MouseButton::Right) => {
-                model.mandelbrot_set.zoom_to_click(
-                    app.window_rect(),
-                    app.mouse.x,
-                    app.mouse.y,
-                    ZOOM_RATIO.inv(),
-                );
-                draw_next_frame(app, model);
-            }
-            KeyPressed(Key::A) => {
-                model.mandelbrot_set.auto();
-            },
-            KeyPressed(Key::S) => {
-                save_frame(app, model.file_num);
-            },
-            _ => (),
-        },
-        _ => (),
-    }
-}
-
-fn draw_next_frame(app: &App, model: &mut Model) {
-    model.draw_frame = app.elapsed_frames() + 1;
-    model.file_num += 1;
-}
-
-fn view(app: &App, model: &Model, frame: Frame) {
-    if model.file_num > FILE_MAX {
+fn update(app: &App, model: &mut Model, update: Update) {
+    model.theta += 0.005;
+    if model.theta > 4.0 * PI {
         exit(0);
     }
 
-    if app.elapsed_frames() != model.draw_frame {
-        return;
-    }
+    model.file_num += 1;
+}
 
+fn event(app: &App, model: &mut Model, event: Event) {
+}
+
+fn view(app: &App, model: &Model, frame: Frame) {
     frame.clear(BLACK);
 
-    let image = model.mandelbrot_set.make_image();
-    let flat_samples = image.as_flat_samples();
-    model.texture.upload_data(
-        app.main_window().device(),
-        &mut frame.command_encoder(),
-        flat_samples.as_slice(),
-    );
+    let draw = app.draw()
+        .translate(vec3(100.0, 0.0, 0.0))
+        .scale(2.0)
+        .z_radians(0.0);
 
-    let draw = app.draw();
 
-    draw.texture(&model.texture);
+    // mandelbrot set
+    let assets = app.assets_path().unwrap();
+    let img_path = assets.join("mandelbrot_set").join("0.png");
+    let texture = wgpu::Texture::from_path(app, img_path).unwrap();
+    draw.texture(&texture);
+
+    // === cardioid ===
+    // base circle
+    draw.ellipse()
+        .x_y(0.0, 0.0)
+        .radius(0.25 * SCALSE)
+        .rgba8(0, 0, 0, 0)
+        .stroke(BLUE)
+        .stroke_weight(2.0);
+
+    // move circle
+    draw.ellipse()
+        .xy(radian_to_position(model.theta, 0.5))
+        .radius(0.25 * SCALSE)
+        .rgba8(0, 0, 0, 0)
+        .stroke(BLUE)
+        .stroke_weight(2.0);
+
+    let p = make_position(model.theta);
+    draw.ellipse()
+        .xy(p)
+        .radius(4.0)
+        .color(RED);
+
+    // line
+    draw.polyline()
+        .points(vec![
+            radian_to_position(0.0, 0.25),
+            vec2(0.0, 0.0),
+            radian_to_position(model.theta, 0.5),
+            p,
+        ])
+        .color(BLUE);
 
     draw.to_frame(app, &frame).unwrap();
 
@@ -138,4 +105,16 @@ fn save_frame(app: &App, file_num: u32) {
         .with_extension("png");
 
     app.main_window().capture_frame(path);
+}
+
+fn radian_to_position(theta: f32, r: f32) -> Vec2 {
+    let x = theta.cos() * r;
+    let y = theta.sin() * r;
+    vec2(x, y) * SCALSE
+}
+
+fn make_position(theta: f32) -> Vec2 {
+    let x = 0.5 * theta.cos() - 0.25 * (2.0 * theta).cos();
+    let y = 0.5 * theta.sin() - 0.25 * (2.0 * theta).sin();
+    vec2(x, y) * SCALSE
 }
