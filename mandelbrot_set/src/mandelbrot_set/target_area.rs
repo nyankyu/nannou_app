@@ -44,7 +44,7 @@ impl TargetArea {
     ) {
         self.center = dvec2(0.0, 0.0);
         self.base = dvec2(
-            -2.0 * (self.window_w / self.window_h) as f64,
+            -2.0 * self.window_w as f64 / self.window_h as f64,
             2.0,
         );
         self.per_pixel = 4.0 / self.window_h as f64;
