@@ -1,7 +1,7 @@
 mod mandelbrot_set;
 
-use nannou::{prelude::*};
-use std::{process::exit};
+use nannou::prelude::*;
+use std::process::exit;
 
 const WINDOW_H: u32 = 1920;
 const WINDOW_W: u32 = 1080;
@@ -30,7 +30,7 @@ fn model(app: &App) -> Model {
 }
 
 fn update(app: &App, model: &mut Model, update: Update) {
-    model.theta += 0.005;
+    model.theta += 0.01;
     if model.theta > 4.0 * PI {
         exit(0);
     }
@@ -38,25 +38,32 @@ fn update(app: &App, model: &mut Model, update: Update) {
     model.file_num += 1;
 }
 
-fn event(app: &App, model: &mut Model, event: Event) {
-}
+fn event(app: &App, model: &mut Model, event: Event) {}
 
 fn view(app: &App, model: &Model, frame: Frame) {
     frame.clear(BLACK);
 
-    let draw = app.draw()
+    let draw = app
+        .draw()
         .translate(vec3(100.0, 0.0, 0.0))
         .scale(2.0)
         .z_radians(0.0);
 
-
     // mandelbrot set
     let assets = app.assets_path().unwrap();
-    let img_path = assets.join("mandelbrot_set").join("0.png");
-    let texture = wgpu::Texture::from_path(app, img_path).unwrap();
+    let img_path =
+        assets.join("mandelbrot_set").join("0.png");
+    let texture =
+        wgpu::Texture::from_path(app, img_path).unwrap();
     draw.texture(&texture);
 
     // === cardioid ===
+    let theta = if model.theta < 2.0 * PI {
+        model.theta
+    } else {
+        model.theta - 2.0 * PI
+    };
+
     // base circle
     draw.ellipse()
         .x_y(0.0, 0.0)
@@ -67,31 +74,44 @@ fn view(app: &App, model: &Model, frame: Frame) {
 
     // move circle
     draw.ellipse()
-        .xy(radian_to_position(model.theta, 0.5))
+        .xy(radian_to_position(theta, 0.5))
         .radius(0.25 * SCALSE)
         .rgba8(0, 0, 0, 0)
         .stroke(BLUE)
         .stroke_weight(2.0);
 
-    let p = make_position(model.theta);
-    draw.ellipse()
-        .xy(p)
-        .radius(4.0)
-        .color(RED);
+    let p = make_position(theta);
+    draw.ellipse().xy(p).radius(4.0).color(RED);
 
     // line
     draw.polyline()
         .points(vec![
             radian_to_position(0.0, 0.25),
             vec2(0.0, 0.0),
-            radian_to_position(model.theta, 0.5),
+            radian_to_position(theta, 0.5),
             p,
         ])
         .color(BLUE);
 
+    // arc
+    let arc = (0..100).map(|i| {
+        let t = i as f32 * (theta / 100.0);
+        pt2(t.cos(), t.sin()) * 20.0
+    });
+    draw.polyline().points(arc).color(WHITE);
+
+    // angle
+    draw.text(&format!(
+        "{:3}°",
+        (theta * 180.0 / PI).round()
+    ))
+    .color(WHITE)
+    .font_size(10)
+    .x_y(30.0, 20.0);
+
     draw.to_frame(app, &frame).unwrap();
 
-    //save_frame(app, model.file_num);
+    save_frame(app, model.file_num);
 }
 
 #[allow(dead_code)]
