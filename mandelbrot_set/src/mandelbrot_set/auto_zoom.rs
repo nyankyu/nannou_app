@@ -1,5 +1,5 @@
 use super::target_area::TargetArea;
-use nannou::prelude::{dvec2, DVec2};
+use nannou::prelude::{dvec2, DVec2, PI_F64, TAU_F64, };
 
 const ZOOM_RATIO: f64 = 9e-2;
 //const ZOOM_RATIO: f64 = 0.9;
@@ -22,14 +22,14 @@ impl AutoZoom {
                 final_target: DVec2::from(FINAL_TARGET),
             }
         } else {
-            let target_list = vec![
-                (dvec2(-1.0, 0.0), 0.7),
-                (dvec2(-0.124866818, 0.74396884), 0.5),
-                (dvec2(0.281058181, 0.531069896), 0.4),
-                (dvec2(0.37926948, 0.33593786), 0.3),
-                (dvec2(-1.1900443, 0.3043895), 0.000_01),
-                (dvec2(-0.7436441, 0.1318255), 0.000_01),
-            ];
+            let target_list = (2..=200).map(|q| {
+                let q = q as f64;
+                let theta = TAU_F64 / q;
+                let x = 0.5 * theta.cos() - 0.25 * (2.0 * theta).cos();
+                let y = 0.5 * theta.sin() - 0.25 * (2.0 * theta).sin();
+                let r = 6.0 / q / q * (PI_F64 / q).sin();
+                (dvec2(x, y), r)
+            }).collect();
             AutoType::FromPlaceToPlace { target_list }
         };
 
