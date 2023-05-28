@@ -5,15 +5,13 @@ use std::process::exit;
 
 const WINDOW_H: u32 = 1920;
 const WINDOW_W: u32 = 1080;
-const SCALSE: f32 = 0.25 * WINDOW_W as f32;
+const SCALSE: f32 = 0.333 * WINDOW_H as f32;
 
 fn main() {
     nannou::app(model).update(update).event(event).run();
 }
 
 struct Model {
-    theta: f32,
-    file_num: u32,
 }
 
 fn model(app: &App) -> Model {
@@ -24,18 +22,10 @@ fn model(app: &App) -> Model {
         .unwrap();
 
     Model {
-        theta: 0.0,
-        file_num: 0,
     }
 }
 
 fn update(app: &App, model: &mut Model, update: Update) {
-    model.theta += 0.01;
-    if model.theta > 4.0 * PI {
-        exit(0);
-    }
-
-    model.file_num += 1;
 }
 
 fn event(app: &App, model: &mut Model, event: Event) {}
@@ -43,26 +33,51 @@ fn event(app: &App, model: &mut Model, event: Event) {}
 fn view(app: &App, model: &Model, frame: Frame) {
     frame.clear(BLACK);
 
+    let f_count = app.elapsed_frames();
+
+    match f_count {
+        0..=700 => cardioid(app, model, frame),
+        _ => mandelbrot(app, model, frame),
+    }
+
+    save_frame(app);
+}
+
+fn mandelbrot(app: &App, model: &Model, frame: Frame) {
     let draw = app
         .draw()
         .translate(vec3(100.0, 0.0, 0.0))
-        .scale(2.0)
+        .scale(1.0)
         .z_radians(0.0);
 
     // mandelbrot set
     let assets = app.assets_path().unwrap();
     let img_path =
-        assets.join("mandelbrot_set").join("0.png");
+        assets.join("mandelbrot_set").join("1.png");
+    let texture =
+        wgpu::Texture::from_path(app, img_path).unwrap();
+    draw.texture(&texture);
+
+    draw.to_frame(app, &frame).unwrap();
+}
+
+fn cardioid(app: &App, model: &Model, frame: Frame) {
+    let draw = app
+        .draw()
+        .translate(vec3(100.0, 0.0, 0.0))
+        .scale(1.0)
+        .z_radians(0.0);
+
+    // mandelbrot set
+    let assets = app.assets_path().unwrap();
+    let img_path =
+        assets.join("mandelbrot_set").join("1.png");
     let texture =
         wgpu::Texture::from_path(app, img_path).unwrap();
     draw.texture(&texture);
 
     // === cardioid ===
-    let theta = if model.theta < 2.0 * PI {
-        model.theta
-    } else {
-        model.theta - 2.0 * PI
-    };
+    let theta = app.elapsed_frames() as f32 * (2.0 * PI / 700.0);
 
     // base circle
     draw.ellipse()
@@ -96,7 +111,7 @@ fn view(app: &App, model: &Model, frame: Frame) {
     // arc
     let arc = (0..100).map(|i| {
         let t = i as f32 * (theta / 100.0);
-        pt2(t.cos(), t.sin()) * 20.0
+        pt2(t.cos(), t.sin()) * 30.0
     });
     draw.polyline().points(arc).color(WHITE);
 
@@ -106,22 +121,21 @@ fn view(app: &App, model: &Model, frame: Frame) {
         (theta * 180.0 / PI).round()
     ))
     .color(WHITE)
-    .font_size(10)
-    .x_y(30.0, 20.0);
+    .font_size(20)
+    .x_y(50.0, 30.0);
 
     draw.to_frame(app, &frame).unwrap();
 
-    save_frame(app, model.file_num);
 }
 
 #[allow(dead_code)]
-fn save_frame(app: &App, file_num: u32) {
+fn save_frame(app: &App) {
     let path = app
         .project_path()
         .expect("could not locate project_path")
         .join("snapshots")
         .join("mandelbrot_set")
-        .join(file_num.to_string())
+        .join(app.elapsed_frames().to_string())
         .with_extension("png");
 
     app.main_window().capture_frame(path);
