@@ -80,6 +80,19 @@ impl MandelbrotSet {
         self.count_iteration();
     }
 
+    pub(crate) fn zoom_to_point(
+        &mut self,
+        re: f64,
+        im: f64,
+        magnification: f64,
+    ) {
+        self.draw_count += 1;
+
+        self.target.change(dvec2(re, im), magnification);
+
+        self.count_iteration();
+    }
+
     pub(crate) fn auto(&mut self) {
         self.auto_zoom.auto();
     }
