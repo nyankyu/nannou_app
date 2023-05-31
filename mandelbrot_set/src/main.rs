@@ -74,7 +74,7 @@ fn event(app: &App, _model: &mut Model, event: Event) {
 
 fn view(app: &App, model: &Model, frame: Frame) {
     chapter::view(app, model, &frame);
-    save_frame(app);
+    //save_frame(app);
 }
 
 #[allow(dead_code)]
