@@ -56,13 +56,13 @@ fn event(app: &App, _model: &mut Model, event: Event) {
         } => match window_event {
             MousePressed(MouseButton::Left) => {
                 println!(
-                    "x:{}, y:{}",
+                    "vec2({}, {}),",
                     app.mouse.x, app.mouse.y
                 );
             }
             MousePressed(MouseButton::Right) => {
                 println!(
-                    "x:{}, y:{}",
+                    "vec2({}, {}),",
                     app.mouse.x, app.mouse.y
                 );
             }

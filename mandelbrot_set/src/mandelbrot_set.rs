@@ -41,6 +41,12 @@ impl MandelbrotSet {
                 ColoringMethod::GrayBackAndFroth,
             ),
         };
+
+        mandelbrot_set.target.move_to(dvec2(
+            -0.516,
+            -0.0,
+        ));
+
         mandelbrot_set.count_iteration();
 
         mandelbrot_set
