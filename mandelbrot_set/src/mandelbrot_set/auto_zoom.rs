@@ -64,7 +64,7 @@ impl AutoZoom {
                     self.auto = false;
                     self.index = 0;
                 }
-                target.change(center, magnification);
+                target.change(center, magnification, 0.0);
             },
         }
     }

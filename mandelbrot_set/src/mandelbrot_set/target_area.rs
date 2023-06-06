@@ -6,6 +6,7 @@ pub(super) struct TargetArea {
     pub(super) center: DVec2,
     pub(super) base: DVec2,
     pub(super) per_pixel: f64,
+    pub(super) rotate: f64,
 }
 
 impl TargetArea {
@@ -16,6 +17,7 @@ impl TargetArea {
             center: dvec2(0.0, 0.0),
             base: dvec2(-2.0 * (w / h) as f64, 2.0),
             per_pixel: 4.0 / h as f64,
+            rotate: 0.0,
         }
     }
 
@@ -41,15 +43,18 @@ impl TargetArea {
         &mut self,
         center: DVec2,
         magnification: f64,
+        rotate: f64,
     ) {
         self.center = dvec2(0.0, 0.0);
         self.base = dvec2(
-            -2.0 * self.window_w as f64 / self.window_h as f64,
+            -2.0 * self.window_w as f64
+                / self.window_h as f64,
             2.0,
         );
         self.per_pixel = 4.0 / self.window_h as f64;
 
         self.move_to(center);
         self.zoom(magnification);
+        self.rotate = rotate;
     }
 }
