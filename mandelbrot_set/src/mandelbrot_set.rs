@@ -13,7 +13,7 @@ use nannou::{
 use rayon::prelude::*;
 use target_area::*;
 
-pub(crate) const ITERATION_LIMIT: u32 = 20_000;
+pub(crate) const ITERATION_LIMIT: u32 = 200_000;
 
 pub(crate) struct MandelbrotSet {
     target: TargetArea,

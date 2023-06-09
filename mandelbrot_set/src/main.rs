@@ -4,7 +4,8 @@ mod mandelbrot_set;
 use mandelbrot_set::*;
 use nannou::{prelude::*, wgpu::*};
 
-const WINDOW_H: u32 = 1920;
+const WINDOW_H: u32 = 960;
+//const WINDOW_H: u32 = 1920;
 const WINDOW_W: u32 = 1080;
 
 fn main() {
