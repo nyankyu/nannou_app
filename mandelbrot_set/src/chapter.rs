@@ -1,70 +1,13 @@
+use std::f64::consts::FRAC_PI_2;
+
 use crate::Model;
 use nannou::prelude::*;
 
 enum Chapter {
-    ToStart,
-    Zoom,
+    LookAround,
 }
 
-fn get_chapter(count: u64) -> Chapter {
-    if count < 100 {
-        Chapter::ToStart
-    } else {
-        Chapter::Zoom
-    }
-}
-
-/*
-re: -1.25467113016734, im: 0.38170649735476875
-re: -1.3726760684050612, im: 0.08537116586111133
-*/
-
-pub(crate) fn update(app: &App, model: &mut Model) {
-    let count = app.elapsed_frames();
-    let d_count = count % 100;
-    match get_chapter(count) {
-        Chapter::ToStart => {
-            model.mandelbrot_set.zoom_to_point(
-                map_range(
-                    d_count,
-                    0,
-                    99,
-                    -0.516,
-                    //0.4267700355568207,
-                    //-0.5512105138015796,
-                    //0.360226392882476,
-
-                    //-1.25467113016734,
-                    -1.3726760684050612,
-                ),
-                map_range(
-                    d_count,
-                    0,
-                    99,
-                    0.0,
-                    //0.3410956048121021,
-                    //0.6276721712363063,
-                    //0.3537611782391899,
-
-                    //0.38170649735476875,
-                    0.08537116586111133,
-                ),
-                //map_range(d_count, 0, 99, 1.0, 0.07),
-                //map_range(d_count, 0, 99, 0.0, 1.55),
-                //map_range(d_count, 0, 99, 1.0, 0.113),
-                //map_range(d_count, 0, 99, 0.0, -0.61),
-
-                //map_range(d_count, 0, 99, 1.0, 0.179),
-                map_range(d_count, 0, 99, 1.0, 0.04),
-
-                map_range(d_count, 0, 99, 0.0, -0.44),
-            )
-        }
-        Chapter::Zoom => {
-            model.mandelbrot_set.zoom_to_click(app.window_rect(), 0.0, 0.0, 0.99)
-        }
-    }
-}
+pub(crate) fn update(app: &App, model: &mut Model) {}
 
 pub(crate) fn view(
     app: &App,
@@ -77,7 +20,65 @@ pub(crate) fn view(
 
     draw_mandelbrot(app, model, frame, &draw);
 
+    let q = app.elapsed_frames() + 3;
+    let inv_q = 1.0 / q as f32;
+    let theta = TAU * inv_q;
+    let theta2 = 2.0 * theta;
+    let xy = vec2(
+            0.5 * theta.cos() - 0.25 * theta2.cos() + 0.516,
+            0.5 * theta.sin() - 0.25 * theta2.sin(),
+    ) * 1920.0 / 4.0;
+
+    draw.ellipse()
+        .xy(xy)
+        .radius(10.0)
+        .color(RED);
+
     draw.to_frame(app, &frame).unwrap();
+}
+
+struct BulbPoint {
+    x: f64,
+    y: f64,
+    rotate: f64,
+    magnification: f64,
+}
+
+impl BulbPoint {
+    fn new(q: u64) -> Self {
+        let inv_q = 1.0 / q as f64;
+        let inv_q2 = inv_q / q as f64;
+        let theta = TAU_F64 * inv_q;
+        let theta2 = 2.0 * theta;
+
+        let x = 0.5 * theta.cos() - 0.25 * theta2.cos();
+        let y = 0.5 * theta.sin() - 0.25 * theta2.sin();
+        let r = inv_q2 * (PI_F64 * inv_q).sin();
+        let rotate = ((theta.cos() - theta2.cos())
+            / (theta.sin() - theta2.sin()))
+        .atan();
+
+        Self {
+            x: x,
+            y: y,
+            rotate: if rotate < 0.0 {
+                rotate + PI_F64
+            } else {
+                rotate
+            },
+            magnification: 4.0 * r,
+        }
+    }
+}
+fn move_to_bulb(app: &App, model: &mut Model, count: u64) {
+    let q = count + 3;
+    let bulb = BulbPoint::new(q);
+    model.mandelbrot_set.zoom_to_point(
+        bulb.x,
+        bulb.y,
+        bulb.magnification,
+        bulb.rotate,
+    );
 }
 
 fn draw_mandelbrot(
