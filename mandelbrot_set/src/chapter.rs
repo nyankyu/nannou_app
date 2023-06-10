@@ -7,7 +7,10 @@ enum Chapter {
     LookAround,
 }
 
-pub(crate) fn update(app: &App, model: &mut Model) {}
+pub(crate) fn update(app: &App, model: &mut Model) {
+    //let count = app.elapsed_frames();
+    //move_to_bulb(app, model, count);
+}
 
 pub(crate) fn view(
     app: &App,
@@ -20,17 +23,15 @@ pub(crate) fn view(
 
     draw_mandelbrot(app, model, frame, &draw);
 
-    let q = app.elapsed_frames() + 3;
-    let inv_q = 1.0 / q as f32;
-    let theta = TAU * inv_q;
+    let p = (app.elapsed_frames() + 1) as f32;
+    let q = (app.elapsed_frames() * 2 + 3) as f32;
+    let inv_q = q.inv();
+    let theta = TAU * p * inv_q;
     let theta2 = 2.0 * theta;
-    let xy = vec2(
-            0.5 * theta.cos() - 0.25 * theta2.cos() + 0.516,
-            0.5 * theta.sin() - 0.25 * theta2.sin(),
-    ) * 1920.0 / 4.0;
-
+    let x = 0.5 * theta.cos() - 0.25 * theta2.cos();
+    let y = 0.5 * theta.sin() - 0.25 * theta2.sin();
     draw.ellipse()
-        .xy(xy)
+        .xy(vec2(x + 0.516, y) * 960.0 / 4.0)
         .radius(10.0)
         .color(RED);
 
@@ -45,15 +46,16 @@ struct BulbPoint {
 }
 
 impl BulbPoint {
-    fn new(q: u64) -> Self {
+    fn new(p: u64, q: u64) -> Self {
+        let p = p as f64;
         let inv_q = 1.0 / q as f64;
         let inv_q2 = inv_q / q as f64;
-        let theta = TAU_F64 * inv_q;
+        let theta = TAU_F64 * p * inv_q;
         let theta2 = 2.0 * theta;
 
         let x = 0.5 * theta.cos() - 0.25 * theta2.cos();
         let y = 0.5 * theta.sin() - 0.25 * theta2.sin();
-        let r = inv_q2 * (PI_F64 * inv_q).sin();
+        let r = inv_q2 * (PI_F64 * p * inv_q).sin();
         let rotate = ((theta.cos() - theta2.cos())
             / (theta.sin() - theta2.sin()))
         .atan();
@@ -61,18 +63,15 @@ impl BulbPoint {
         Self {
             x: x,
             y: y,
-            rotate: if rotate < 0.0 {
-                rotate + PI_F64
-            } else {
-                rotate
-            },
+            rotate: rotate,
             magnification: 4.0 * r,
         }
     }
 }
 fn move_to_bulb(app: &App, model: &mut Model, count: u64) {
-    let q = count + 3;
-    let bulb = BulbPoint::new(q);
+    let q = 2 * count + 3;
+    let p = count + 1;
+    let bulb = BulbPoint::new(p, q);
     model.mandelbrot_set.zoom_to_point(
         bulb.x,
         bulb.y,
