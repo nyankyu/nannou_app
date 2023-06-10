@@ -5,6 +5,7 @@ members = [
     "moving_points2",
     "perlin_noise",
     "rotating",
+    "make_mandelbrot",
 ]
 
 resolver="2"
