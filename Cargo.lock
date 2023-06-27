@@ -979,6 +979,11 @@ dependencies = [
 [[package]]
 name = "make_mandelbrot"
 version = "0.1.0"
+dependencies = [
+ "nannou",
+ "num-complex",
+ "rayon",
+]
 
 [[package]]
 name = "malloc_buf"
