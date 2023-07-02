@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 mod auto_zoom;
 mod coloring;
 mod target_area;
@@ -11,7 +13,7 @@ use nannou::{
 use rayon::prelude::*;
 use target_area::*;
 
-pub(crate) const ITERATION_LIMIT: u32 = 20_000;
+pub(crate) const ITERATION_LIMIT: u32 = 200_000;
 
 pub(crate) struct MandelbrotSet {
     target: TargetArea,
@@ -39,6 +41,9 @@ impl MandelbrotSet {
                 ColoringMethod::GrayBackAndFroth,
             ),
         };
+
+        mandelbrot_set.target.move_to(dvec2(-0.516, -0.0));
+
         mandelbrot_set.count_iteration();
 
         mandelbrot_set
@@ -78,6 +83,20 @@ impl MandelbrotSet {
         self.count_iteration();
     }
 
+    pub(crate) fn zoom_to_point(
+        &mut self,
+        re: f64,
+        im: f64,
+        magnification: f64,
+        rotate: f64,
+    ) {
+        self.draw_count += 1;
+
+        self.target.change(dvec2(re, im), magnification, rotate);
+
+        self.count_iteration();
+    }
+
     pub(crate) fn auto(&mut self) {
         self.auto_zoom.auto();
     }
@@ -99,16 +118,30 @@ impl MandelbrotSet {
             .enumerate()
             .collect();
 
+        let sin_theta = -self.target.rotate.sin();
+        let cos_theta = self.target.rotate.cos();
+        let pre_calc_x = self.target.center[0]
+            - self.target.center[0] * cos_theta
+            + self.target.center[1] * sin_theta;
+        let pre_calc_y = self.target.center[1]
+            - self.target.center[0] * sin_theta
+            - self.target.center[1] * cos_theta;
+
         bands.into_par_iter().for_each(
             |(pixel_y, band)| {
                 for pixel_x in 0..band_size {
+                    let x = self.target.base[0]
+                        + pixel_x as f64
+                            * self.target.per_pixel;
+                    let y = self.target.base[1]
+                        - pixel_y as f64
+                            * self.target.per_pixel;
                     band[pixel_x] = Self::escape_time(
-                        self.target.base[0]
-                            + pixel_x as f64
-                                * self.target.per_pixel,
-                        self.target.base[1]
-                            - pixel_y as f64
-                                * self.target.per_pixel,
+                        x * cos_theta - y * sin_theta
+                            + pre_calc_x,
+                        x * sin_theta
+                            + y * cos_theta
+                            + pre_calc_y,
                         ITERATION_LIMIT,
                     );
                 }
